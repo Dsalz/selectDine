@@ -1,0 +1,64 @@
+<div style="display: flex; margin: 50px auto; width: 50%; min-width: 200px">
+  <input style="width: 70%; border-radius: 5px 0 0 5px; border: 1px solid #DC143C; padding: 0 5px" name="location" id="location" type="text" />
+  <button style="width: 30%; color: #fff; background: #DC143C; border-radius: 0 5px 5px 0; text-align: center; border: none; padding: 10px 0" id="submitLocation" type="button">Submit</button> 
+</div>
+
+
+<div id='map' style="height: 400px; width: 80%; margin: 20px auto"></div> 
+
+<script>
+
+const locationField = document.getElementById('location');
+const locationAddress = document.getElementById('locationAddress');
+const mapDiv = document.getElementById('map');
+const submitBtn = document.getElementById('submitLocation');
+
+let Lat, Lng, LocationVicinity;
+
+function enableGooglePlaceApiSearch() {
+  let autocomplete = new google.maps.places.Autocomplete(locationField);
+  google.maps.event.addListener(autocomplete,'place_changed', function() {
+    let place = autocomplete.getPlace();
+    Lng = place.geometry.location.lng();
+    Lat = place.geometry.location.lat();
+    LocationVicinity = place.vicinity;
+  })
+};
+
+submitBtn.addEventListener('click', () => {
+  addMapToScreen(Lat, Lng);
+})
+
+function addMapToScreen(lat, lng) {
+  console.log(lat, lng);
+  let position = {lat, lng};
+  let map = new google.maps.Map(mapDiv, {zoom: 13, center: position});
+  let trafficLayer = new google.maps.TrafficLayer();
+	trafficLayer.setMap(map);
+  let marker = new google.maps.Marker({ position, map });
+  console.log(marker);
+  var request = {
+    location: position,
+    type: ['restaurant'],
+    rankBy: google.maps.places.RankBy.DISTANCE
+  };
+
+ infowindow = new google.maps.InfoWindow();
+  places = new google.maps.places.PlacesService(map);
+  places.nearbySearch(request, restaurants => {
+    restaurants.map(r => {
+    let position= r.geometry.location;
+    let restaurantMarker = new google.maps.Marker( {position, map})      
+    })
+  });
+}
+
+const showAddress = (lat, lng) => {
+  let position = {lat, lng};
+  let geocoder = new google.maps.Geocoder;
+  geocoder.geocode({location: position}, function(results, status){
+    locationAddress.textContent = results[0].formatted_address;
+  });
+}
+</script>
+<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCYNOuYMAMc2y3hEld0u2bJT-JfAo40Uj4&libraries=places&callback=enableGooglePlaceApiSearch"></script>
